@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import moment from 'moment';
 
-const url= 'https://todo-3b8ed.firebaseio.com/.json';
+const url= 'https://todo-3b8ed.firebaseio.com/';
 
 class App extends Component {
   constructor() {
@@ -10,11 +10,12 @@ class App extends Component {
     this.state = { todos: {} };
 
     this.handleNewTodoInput = this.handleNewTodoInput.bind(this);
+    this.deleteTodo = this.deleteTodo.bind(this);
   }
 
   createTodo(todoText) {
     axios
-    .post(url, {title: todoText,
+    .post(`${url}.json`, {title: todoText,
                 createdAt: new Date()})
     .then((response)=>{
       console.log(response)
@@ -33,13 +34,21 @@ class App extends Component {
   }
   componentDidMount(){
     this.getTodos()
-}
-getTodos(){
-  axios.get(url).then((response) => {
+  }
+  getTodos(){
+  axios.get(`${url}.json`).then((response) => {
       this.setState({ todos: response.data });
     }).catch((error) => {
       console.log(error);
     });
+  }
+  deleteTodo(todoId){
+    axios.delete(`${url}${todoId}.json`)
+    .then((response)=>{
+      let todos=this.state.todos
+      delete todos[todoId];
+      this.setState({todos})
+    })
   }
 renderTodoList() {
     let todoElements = [];
@@ -53,6 +62,12 @@ renderTodoList() {
             <h4>{todo.title}</h4>
             <div>{moment(todo.createdAt).calendar()}</div>
           </div>
+          <button
+            className="ml-4 btn btn-link"
+            onClick={ () => { this.deleteTodo(todoId) } }
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
       );
     }
